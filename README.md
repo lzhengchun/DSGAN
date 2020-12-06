@@ -10,3 +10,5 @@ As discussed in the manuscript, we evluated 5 different model archtecture and co
 
 # Dataset
 The dataset used in this repo and in the manuscript can be downloaded [http://doi.org/10.5281/zenodo.4298978](http://doi.org/10.5281/zenodo.4298978)
+
+![Generator Model Arch](repo-img/DSGAN-github-encoded.png)
