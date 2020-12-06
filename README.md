@@ -10,5 +10,8 @@ As discussed in the manuscript, we evluated 5 different model archtecture and co
 
 # Dataset
 The dataset used in this repo and in the manuscript can be downloaded [http://doi.org/10.5281/zenodo.4298978](http://doi.org/10.5281/zenodo.4298978)
+We need to note that, the main purpose of this repo is to show all implementation details of our model proposed in the paper. 
+This implementation is not fine-tuned to support new dataset straightforwardly, i.e., it is not an out-of-box solution for any downscaling.
+Depends on your dataset, you may need to handcraft our harded coded piece to make it work with yours.
 
 ![Generator Model Arch](repo-img/DSGAN-github-encoded.png)
