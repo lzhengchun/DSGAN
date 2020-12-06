@@ -5,7 +5,7 @@ If you want to try it using your own dataset, you can either edit the data.py to
 We need to note that, the main purpose of this repo is the show all implementation details of our model proposed in the paper. This implementation is not fine-tuned to support new  dataset, depends on your dataset, you may need to handcraft our harded coded piece to make it work with yours.
 
 Basically, you need to prepare your high resolution data as (omit the dimension size):
-`
+```
 HDF5 "WRF_precip_2005_12km-mask-clip0p05-99p5.hdf5" {
 GROUP "/" {
    DATASET "rain" {
@@ -14,10 +14,10 @@ GROUP "/" {
    }
 }
 }
-`
+```
 
 and you low resolution precipitation and variables as (omit the dimension size):
-`
+```
 HDF5 "WRF_50km_vars-mask-clip0p05-99p5.hdf5" {
 GROUP "/" {
    DATASET "IWV" {
@@ -38,4 +38,4 @@ GROUP "/" {
    }
 }
 }
-`
+```
