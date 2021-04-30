@@ -1,4 +1,4 @@
-<p align="center">Copyright © 2020, UChicago Argonne, LLC</p>  
+<p align="center">Copyright © 2021, UChicago Argonne, LLC</p>  
 <p align="center">All Rights Reserved</p>  
 <p align="center">Software Name: DSGAN: A GAN for precipitation downscaling</p>  
 <p align="center">By: Argonne National Laboratory</p>  
