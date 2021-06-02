@@ -15,6 +15,6 @@ Depends on your dataset, you may need to handcraft our hard-coded piece to make 
 
 # Dataset
 The dataset used in this repo and in the manuscript can be downloaded [http://doi.org/10.5281/zenodo.4298978](https://doi.org/10.5281/zenodo.4298978)
-
+More information available under the dataset folder.
 
 ![Generator Model Arch](repo-img/DSGAN-github-encoded.png)
