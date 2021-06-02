@@ -4,8 +4,7 @@ import sys, os, time, argparse, shutil, h5py, torch
 from scipy.stats import pearsonr
 import multiprocessing as mp
 from models import discModel
-from models import inceContxCSR_SP_Cat_CH as mdlCSR_SP
-from models import inceContxCSR_CH_Cat_SP as mdlCSR_CH
+from models import encodedGenerator
 from data import bkgdGen, gen_train_batch_bg, get1batch4test
 
 parser = argparse.ArgumentParser(description='encode sinogram image.')
@@ -22,7 +21,6 @@ parser.add_argument('-logtrs', type=str2bool, default=False, help='log transform
 parser.add_argument('-sam',    type=str2bool, default=True, help='apply spatial attention')
 parser.add_argument('-cam',    type=str2bool, default=True, help='apply channel attention')
 parser.add_argument('-cvars',  type=str2list, default='T2:IWV:SLP', help='vars as condition')
-parser.add_argument('-ch1st',  type=str2bool, default=False, help='ch attention first')
 parser.add_argument('-wmse',   type=float, default=5, help='weight of content loss for G loss')
 
 args, unparsed = parser.parse_known_args()
@@ -51,12 +49,8 @@ def main(args):
     mb_size = args.mbsize
     in_depth = args.depth
 
-    if args.ch1st:
-        gene_model = mdlCSR_CH(in_ch=1, ncvar=len(args.cvars), use_ele=True, sam=args.sam, cam=args.cam, \
-                          stage_chs=[args.mdlsz//2**_d for _d in range(3)])
-    else:
-        gene_model = mdlCSR_SP(in_ch=1, ncvar=len(args.cvars), use_ele=True, sam=args.sam, cam=args.cam, \
-                          stage_chs=[args.mdlsz//2**_d for _d in range(3)])
+    gene_model = encodedGenerator(in_ch=1, ncvar=len(args.cvars), use_ele=True, sam=args.sam, cam=args.cam, \
+                                  stage_chs=[args.mdlsz//2**_d for _d in range(3)])
 
     disc_model = discModel()
 

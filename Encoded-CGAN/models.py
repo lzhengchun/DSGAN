@@ -38,7 +38,7 @@ class CAM(torch.nn.Module):
         else:
             return _attention * x
 
-# Sparial attention module 
+# Spatial attention module 
 class SAM(torch.nn.Module):
     def __init__(self, in_ch, relu_a=0.01):
         super().__init__()
@@ -117,8 +117,8 @@ class inception_box(torch.nn.Module):
             
         return torch.cat([_out_conv1b1, _out_conv3b3, _out_conv5b5, _out_maxpool], 1)
 
-# sp-cat-ch
-class inceContxCSR_SP_Cat_CH(torch.nn.Module):
+# spatial attention first
+class encodedGenerator(torch.nn.Module):
     def ceil(self, v):
         if v == int(v): return int(v)
         else: return int(v+1)
@@ -266,156 +266,7 @@ class inceContxCSR_SP_Cat_CH(torch.nn.Module):
             return out_tmp, atten1, atten2
         else:
             return out_tmp
-# ch-cat-sp
-class inceContxCSR_CH_Cat_SP(torch.nn.Module):
-    def ceil(self, v):
-        if v == int(v): return int(v)
-        else: return int(v+1)
 
-    def __init__(self, in_ch, ncvar, cvar_ch=8, relu_a=0.01, use_ele=True, cam=False, sam=False, stage_chs=(64, 32, 16)):
-        super().__init__()
-        self.in_ch = in_ch
-        self.norm_chs = 4 * self.ceil(in_ch/4)
-        self.use_sam = sam
-        self.use_cam = cam
-        self.in_norm_ops = [
-            torch.nn.Conv2d(in_channels=in_ch, out_channels=self.norm_chs, \
-                            kernel_size=1, stride=1, padding=0),
-            torch.nn.BatchNorm2d(num_features=self.norm_chs),
-            torch.nn.LeakyReLU(negative_slope=relu_a), ]
-        
-        self.up1_ops = [
-            torch.nn.ConvTranspose2d(in_channels=stage_chs[0] + cvar_ch*ncvar, out_channels=stage_chs[0], \
-                                        kernel_size=2, stride=2, padding=0),
-            torch.nn.LeakyReLU(negative_slope=0.01), ]
-        
-        self.up2_ops = [
-            torch.nn.ConvTranspose2d(in_channels=stage_chs[1], out_channels=stage_chs[1], \
-                                        kernel_size=2, stride=2, padding=0),
-            torch.nn.LeakyReLU(negative_slope=0.01), ]
-                
-        if use_ele:
-            self.ele_ops = [
-                torch.nn.Conv2d(in_channels=1, out_channels=4, \
-                                kernel_size=3, stride=1, padding=1),
-                torch.nn.LeakyReLU(negative_slope=0.01), 
-                torch.nn.Conv2d(in_channels=4, out_channels=8, \
-                                kernel_size=3, stride=1, padding=1),
-                torch.nn.LeakyReLU(negative_slope=0.01), ]
-        
-        self.out_ops = [
-            torch.nn.Conv2d(in_channels=stage_chs[2], out_channels=4, \
-                            kernel_size=3, stride=1, padding=1),
-            torch.nn.BatchNorm2d(num_features=4),
-            torch.nn.LeakyReLU(negative_slope=0.01), 
-            torch.nn.Conv2d(in_channels=4, out_channels=1, \
-                            kernel_size=3, stride=1, padding=1, bias=False),]
-        
-        self.cvar_inceps = [torch.nn.ModuleList([inception_box(in_ch=1, o_ch=cvar_ch), \
-                            inception_box(in_ch=cvar_ch, o_ch=cvar_ch), \
-                            inception_box(in_ch=cvar_ch, o_ch=cvar_ch), \
-                            inception_box(in_ch=cvar_ch, o_ch=cvar_ch)]) for _ in range(ncvar)]
-        self.cvar_inceps = torch.nn.ModuleList(self.cvar_inceps)
-
-        self.ich_layers = torch.nn.Sequential(*self.in_norm_ops)
-        
-        self.p1_inception1 = inception_box(in_ch = self.norm_chs, o_ch=stage_chs[0])
-        self.p1_inception2 = inception_box(in_ch = stage_chs[0], o_ch = stage_chs[0])
-        self.p1_inception3 = inception_box(in_ch = stage_chs[0], o_ch = stage_chs[0])
-        self.p1_inception4 = inception_box(in_ch = stage_chs[0], o_ch = stage_chs[0])
-        self.up1_layers    = torch.nn.Sequential(*self.up1_ops)
-        
-        self.p2_inception1 = inception_box(in_ch = stage_chs[0], o_ch = stage_chs[1])
-        self.p2_inception2 = inception_box(in_ch = stage_chs[1], o_ch = stage_chs[1])
-        self.p2_inception3 = inception_box(in_ch = stage_chs[1], o_ch = stage_chs[1])
-        self.p2_inception4 = inception_box(in_ch = stage_chs[1], o_ch = stage_chs[1])
-        self.up2_layers    = torch.nn.Sequential(*self.up2_ops)
-
-        if self.use_cam:
-            self.up1_cam = CAM(in_ch = stage_chs[0])
-            self.up2_cam = CAM(in_ch = stage_chs[1])
-
-        if self.use_sam:
-            self.up1_sam = SAM(in_ch = stage_chs[0] + cvar_ch*ncvar)
-            self.up2_sam = SAM(in_ch = stage_chs[1])
-
-        if use_ele:
-            self.ele_layers    = torch.nn.Sequential(*self.ele_ops)
-            self.p3_inception1 = inception_box(in_ch = 8+stage_chs[1], o_ch = stage_chs[2])
-        else:
-            self.p3_inception1 = inception_box(in_ch = stage_chs[1], o_ch = stage_chs[2])
-        self.p3_inception2 = inception_box(in_ch = stage_chs[2], o_ch = stage_chs[2])
-        self.p3_inception3 = inception_box(in_ch = stage_chs[2], o_ch = stage_chs[2])
-        self.p3_inception4 = inception_box(in_ch = stage_chs[2], o_ch = stage_chs[2])
-        self.out_layers    = torch.nn.Sequential(*self.out_ops)
-        
-    def forward(self, x, cvars, elevation=None, ret_sam=False):
-        assert len(cvars) == len(self.cvar_inceps)
-        cvar_outs = []
-        for _cf, cvar in zip(self.cvar_inceps, cvars):
-            _tmp = cvar
-            for _f in _cf:
-                _tmp = _f(_tmp)
-            cvar_outs.append(_tmp)
-            
-        out_tmp = x
-        for layer in self.ich_layers:
-            out_tmp = layer(out_tmp) 
-            
-        out_tmp = self.p1_inception1(out_tmp)
-        out_tmp = self.p1_inception2(out_tmp)
-        out_tmp = self.p1_inception3(out_tmp)
-        out_tmp = self.p1_inception4(out_tmp)        
-            
-        if self.use_cam:
-            out_tmp = self.up1_cam(out_tmp) # apply channel attention 
-
-        out_tmp = torch.cat([out_tmp,] + cvar_outs, 1) # concat cvars
-
-        if self.use_sam: # apply spatial attention 
-            if ret_sam:
-                atten1, out_tmp = self.up1_sam(out_tmp, ret_att=True) 
-            else:
-                out_tmp = self.up1_sam(out_tmp) 
-
-        for layer in self.up1_layers:
-            out_tmp = layer(out_tmp)  
-            
-        out_tmp = self.p2_inception1(out_tmp)
-        out_tmp = self.p2_inception2(out_tmp)
-        out_tmp = self.p2_inception3(out_tmp)
-        out_tmp = self.p2_inception4(out_tmp)
-
-        if self.use_cam:
-            out_tmp = self.up2_cam(out_tmp) # apply channel attention 
-            
-        if self.use_sam: # apply spatial attention 
-            if ret_sam:
-                atten2, out_tmp = self.up2_sam(out_tmp, ret_att=True) 
-            else:
-                out_tmp = self.up2_sam(out_tmp) 
-
-        for layer in self.up2_layers:
-            out_tmp = layer(out_tmp)  
-            
-        if elevation is not None:
-            ele_tmp = elevation
-            for layer in self.ele_layers:
-                ele_tmp = layer(ele_tmp)  
-            out_tmp = torch.cat([out_tmp, ele_tmp], 1)
-            
-        out_tmp = self.p3_inception1(out_tmp)
-        out_tmp = self.p3_inception2(out_tmp)
-        out_tmp = self.p3_inception3(out_tmp)
-        out_tmp = self.p3_inception4(out_tmp)
-        for layer in self.out_layers:
-            out_tmp = layer(out_tmp)  
-            
-        if ret_sam:
-            return out_tmp, atten1, atten2
-        else:
-            return out_tmp
-        
 class discModel(torch.nn.Module):
     def __init__(self, in_ch=1):
         super().__init__()

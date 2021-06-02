@@ -72,7 +72,7 @@ def get1batch4test(in_depth, idx=None, dev='cuda', trans=True, cvars=[]):
     if trans:
         rain_12km = np.log(1 + rain_12km)
 
-    if idx is None: idx = np.random.randint(0, rain_12km.shape[0]-in_depth, mb_size)
+    if idx is None: idx = np.random.randint(0, rain_12km.shape[0]-in_depth, 128)
     vars4stack = []
     batch_prec= np.array([vars_all['prec'][s_idx : (s_idx+in_depth)] for s_idx in idx], dtype=np.float32)
 
