@@ -16,10 +16,8 @@ This implementation is not fine-tuned to support new dataset straightforwardly, 
 Depends on your dataset, you may need to handcraft our hard-coded piece to make it work with yours.
 
 # Dataset
-The dataset used in this repo and in the manuscript can be downloaded [http://doi.org/10.5281/zenodo.4298978](https://doi.org/10.5281/zenodo.4298978).
-More information about data preparation is available under the dataset folder.
 
-If you want to reproduce our results, please download the dataset from [http://doi.org/10.5281/zenodo.4298978](http://doi.org/10.5281/zenodo.4298978) and unzip them (`WRF_50km_vars-mask-clip0p05-99p5.hdf5` and `WRF_precip_2005_12km-mask-clip0p05-99p5.hdf5`) here.
+If you want to reproduce our results, please download the dataset from [http://doi.org/10.5281/zenodo.4298978](http://doi.org/10.5281/zenodo.4298978) and unzip them (`WRF_50km_vars-mask-clip0p05-99p5.hdf5` and `WRF_precip_2005_12km-mask-clip0p05-99p5.hdf5`) to the `dataset` folder here.
 
 If you want to try it using your own dataset, you can either edit the data.py to load dataset of your format, or prepare your h5 dataset using the same dataset name as we used in the data.py. 
 We need to note that, the main purpose of this repo is to show all implementation details of our model proposed in the paper. 
