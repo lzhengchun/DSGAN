@@ -4,7 +4,7 @@
 [![DOI](https://zenodo.org/badge/314389271.svg)](https://zenodo.org/badge/latestdoi/314389271)
 
 # About
-This is the offical implementation of the model, a conditinal GAN for dynamic precipitation downscaling, proposed in our paper [Fast and accurate learned multiresolution dynamical downscaling for precipitation](https://doi.org/10.5194/gmd-2020-412)
+This is the offical implementation of the model, a conditinal GAN for dynamic precipitation downscaling, proposed in our paper [Fast and accurate learned multiresolution dynamical downscaling for precipitation](https://gmd.copernicus.org/articles/14/6355/2021/gmd-14-6355-2021.pdf)
 
 # Model and Implementation 
 As discussed in the manuscript, we evluated 5 different model archtecture and concluded that the `Encoded-CGAN` performed the best in different cases under different metric. So, here we only opensourced the `Encoded-CGAN`. The architecture of the generator is shown below. We can consider open other implemnetaions upon request. 
